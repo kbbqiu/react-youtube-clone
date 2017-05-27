@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import YTSearch from 'youtube-api-search';
+import _ from 'lodash'
 
 import SearchBar from './search_bar';
 import VideoList from './video_list';
@@ -20,13 +21,17 @@ class App extends Component {
 
     this.videoSearch('surfboards');
 
+    this.videoSearch = this.videoSearch.bind(this);
     this.selectVideo = this.selectVideo.bind(this);
   }
 
   render() {
+    // throttles the search
+    const videoSearch = _.debounce(this.videoSearch, 300)
+
     return (
       <div>
-        <SearchBar onSearchTermChange={term => this.videoSearch(term)} />
+        <SearchBar onSearchTermChange={videoSearch} />
         <VideoDetail video={this.state.selectedVideo} />
         <VideoList
           onVideoSelect={this.selectVideo}
@@ -41,7 +46,7 @@ class App extends Component {
 
   videoSearch(term) {
     // Youtube search updates with this.state.videos
-    YTSearch({ key: API_KEY, term: 'surfboards' }, (videos) => {
+    YTSearch({ key: API_KEY, term }, (videos) => {
       this.setState({
         videos,
         selectedVideo: videos[0]
